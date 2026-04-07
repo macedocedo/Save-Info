@@ -29,6 +29,7 @@ create table categories (
 insert into categories (name) values ('Geral'),('Notícias'),('Perguntas'),('Projetos');
 
 -- Políticas de acesso público (necessário para GitHub Pages)
+
 alter table posts enable row level security;
 alter table categories enable row level security;
 create policy "pub" on posts for all using (true) with check (true);
