@@ -10,4 +10,4 @@ https://macedocedo.github.io/Save-Info
 <img width="1919" height="953" alt="image" src="https://github.com/user-attachments/assets/793897fe-b01e-401c-a79c-f839bd54d22a" />
 
 
-<img width="1915" height="954" alt="image" src="https://github.com/user-attachments/assets/8810f541-8406-41cd-b356-83031e27ae5b" />
+<img width="1912" height="938" alt="image" src="https://github.com/user-attachments/assets/6c02b5dc-d849-42b1-bb7c-af445f9db15d" />
