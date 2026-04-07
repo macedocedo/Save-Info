@@ -23,11 +23,9 @@ create table posts (
   category text, pinned boolean default false, media_type text,
   media_src text, ts bigint, edited_at bigint
 );
-
 create table categories (
   id serial primary key, name text unique not null
 );
-
 insert into categories (name) values ('Geral'),('Notícias'),('Perguntas'),('Projetos');
 
 -- Políticas de acesso público (necessário para GitHub Pages)
