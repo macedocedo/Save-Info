@@ -34,3 +34,6 @@ alter table posts enable row level security;
 alter table categories enable row level security;
 create policy "pub" on posts for all using (true) with check (true);
 create policy "pub" on categories for all using (true) with check (true);
+
+<img width="1899" height="947" alt="image" src="https://github.com/user-attachments/assets/869507ea-c41b-4dff-bdf4-8e9a359350ef" />
+
