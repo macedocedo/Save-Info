@@ -1,18 +1,22 @@
+// ════════════════════════════════════════════════════════
+//  ⚠️  CONFIGURE AQUI — substitua pelos seus dados do Supabase
+//  Acesse: supabase.com → seu projeto → Settings → API
+// ════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://gwmccqpxuyichkrzyqyi.supabase.co'; // ← substitua
+const SUPABASE_KEY = 'sb_publishable_EmgpkFG517e7CiZLWmB5hA_2POOdpLo';               // ← substitua
+// ════════════════════════════════════════════════════════
+
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ── State ──
-let posts      = JSON.parse(localStorage.getItem('forum_posts') || '[]');
-let categories = JSON.parse(localStorage.getItem('forum_cats')  || '["Geral","Notícias","Perguntas","Projetos"]');
+let posts      = [];
+let categories = [];
 let activeTab      = 'none';
 let activeCategory = null;
 let currentSort    = 'recent';
 let editingPostId  = null;
 let viewingPostId  = null;
 let uploadedImgData = null;
-
-// ── Persist ──
-function save() {
-  localStorage.setItem('forum_posts', JSON.stringify(posts));
-  localStorage.setItem('forum_cats',  JSON.stringify(categories));
-}
 
 // ── Helpers ──
 function showToast(msg) {
@@ -62,7 +66,104 @@ function getEmbedUrl(url) {
   return url;
 }
 
-// ── Categories ──
+// ── Supabase: Carregar dados ──
+async function loadData() {
+  try {
+    const { data: cats, error: catErr } = await db
+      .from('categories')
+      .select('name')
+      .order('id');
+
+    if (catErr) throw catErr;
+    categories = cats.map(c => c.name);
+
+    const { data: ps, error: postErr } = await db
+      .from('posts')
+      .select('*')
+      .order('ts', { ascending: false });
+
+    if (postErr) throw postErr;
+    posts = ps.map(p => ({
+      id:        p.id,
+      title:     p.title,
+      body:      p.body,
+      author:    p.author,
+      category:  p.category,
+      pinned:    p.pinned,
+      mediaType: p.media_type,
+      mediaSrc:  p.media_src,
+      ts:        p.ts,
+      editedAt:  p.edited_at
+    }));
+
+    renderCategories();
+    renderPosts();
+  } catch (err) {
+    console.error('Erro ao carregar dados:', err);
+    showToast('Erro ao conectar ao banco de dados');
+  }
+}
+
+// ── Supabase: Salvar post (criar ou editar) ──
+async function savePost(post) {
+  const { error } = await db.from('posts').upsert({
+    id:         post.id,
+    title:      post.title,
+    body:       post.body,
+    author:     post.author,
+    category:   post.category || null,
+    pinned:     post.pinned,
+    media_type: post.mediaType || null,
+    media_src:  post.mediaSrc  || null,
+    ts:         post.ts,
+    edited_at:  post.editedAt  || null
+  });
+  if (error) throw error;
+}
+
+// ── Supabase: Deletar post ──
+async function deletePostDB(id) {
+  const { error } = await db.from('posts').delete().eq('id', id);
+  if (error) throw error;
+}
+
+// ── Supabase: Adicionar categoria ──
+async function addCategoryDB(name) {
+  const { error } = await db.from('categories').insert({ name });
+  if (error) throw error;
+}
+
+// ── Supabase: Renomear categoria ──
+async function renameCategoryDB(oldName, newName) {
+  const { error: catErr } = await db
+    .from('categories')
+    .update({ name: newName })
+    .eq('name', oldName);
+  if (catErr) throw catErr;
+
+  const { error: postErr } = await db
+    .from('posts')
+    .update({ category: newName })
+    .eq('category', oldName);
+  if (postErr) throw postErr;
+}
+
+// ── Supabase: Deletar categoria ──
+async function deleteCategoryDB(name) {
+  const { error: catErr } = await db
+    .from('categories')
+    .delete()
+    .eq('name', name);
+  if (catErr) throw catErr;
+
+  const { error: postErr } = await db
+    .from('posts')
+    .update({ category: null })
+    .eq('category', name);
+  if (postErr) throw postErr;
+}
+
+// ── Categories: Render ──
 function renderCategories() {
   const list = document.getElementById('cat-list');
   let html = `
@@ -95,7 +196,6 @@ function renderCategories() {
   document.getElementById('info-cats').textContent =
     `${categories.length} categori${categories.length !== 1 ? 'as' : 'a'}`;
 
-  // Populate select
   const sel = document.getElementById('f-cat');
   if (sel) {
     sel.innerHTML = `<option value="">Sem categoria</option>` +
@@ -117,31 +217,42 @@ function startEditCat(i) {
   if (acts) acts.innerHTML = `<button class="cat-edit-confirm" onclick="confirmEditCat(${i})">✓</button>`;
 }
 
-function confirmEditCat(i) {
+async function confirmEditCat(i) {
   const inp = document.getElementById(`cat-edit-${i}`);
   if (!inp) return;
   const newName = inp.value.trim();
   if (!newName) return;
   const oldName = categories[i];
-  categories[i] = newName;
-  posts.forEach(p => { if (p.category === oldName) p.category = newName; });
-  if (activeCategory === oldName) activeCategory = newName;
-  save();
-  renderCategories();
-  renderPosts();
-  showToast('Categoria renomeada');
+  try {
+    await renameCategoryDB(oldName, newName);
+    categories[i] = newName;
+    posts.forEach(p => { if (p.category === oldName) p.category = newName; });
+    if (activeCategory === oldName) activeCategory = newName;
+    renderCategories();
+    renderPosts();
+    showToast('Categoria renomeada');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao renomear categoria');
+    renderCategories();
+  }
 }
 
-function deleteCategory(i) {
+async function deleteCategory(i) {
   if (!confirm(`Excluir categoria "${categories[i]}"? As publicações ficarão sem categoria.`)) return;
   const old = categories[i];
-  categories.splice(i, 1);
-  posts.forEach(p => { if (p.category === old) p.category = ''; });
-  if (activeCategory === old) activeCategory = null;
-  save();
-  renderCategories();
-  renderPosts();
-  showToast('Categoria excluída');
+  try {
+    await deleteCategoryDB(old);
+    categories.splice(i, 1);
+    posts.forEach(p => { if (p.category === old) p.category = ''; });
+    if (activeCategory === old) activeCategory = null;
+    renderCategories();
+    renderPosts();
+    showToast('Categoria excluída');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao excluir categoria');
+  }
 }
 
 function toggleAddCat() {
@@ -150,17 +261,22 @@ function toggleAddCat() {
   if (f.style.display === 'flex') document.getElementById('new-cat-input').focus();
 }
 
-function confirmAddCat() {
+async function confirmAddCat() {
   const inp  = document.getElementById('new-cat-input');
   const name = inp.value.trim();
   if (!name) return;
   if (categories.includes(name)) { showToast('Categoria já existe'); return; }
-  categories.push(name);
-  save();
-  inp.value = '';
-  document.getElementById('add-cat-form').style.display = 'none';
-  renderCategories();
-  showToast('Categoria adicionada');
+  try {
+    await addCategoryDB(name);
+    categories.push(name);
+    inp.value = '';
+    document.getElementById('add-cat-form').style.display = 'none';
+    renderCategories();
+    showToast('Categoria adicionada');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao adicionar categoria');
+  }
 }
 
 document.getElementById('new-cat-input').addEventListener('keydown', e => {
@@ -194,9 +310,9 @@ function getFilteredPosts() {
     ? posts.filter(p => p.category === activeCategory)
     : [...posts];
 
-  if (currentSort === 'recent')  list.sort((a, b) => b.ts - a.ts);
+  if (currentSort === 'recent')      list.sort((a, b) => b.ts - a.ts);
   else if (currentSort === 'oldest') list.sort((a, b) => a.ts - b.ts);
-  else list.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'));
+  else                               list.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'));
 
   const pinned = list.filter(p => p.pinned);
   const rest   = list.filter(p => !p.pinned);
@@ -232,8 +348,8 @@ function renderPosts() {
       mediaIndicator = '<span class="media-indicator">▶️ Vídeo incorporado</span>';
     }
 
-    const catDot  = p.category ? `<span class="tag tag-colored">${p.category}</span>` : '';
-    const pinBadge = p.pinned  ? `<span class="pin-badge">📌 Fixado</span>` : '';
+    const catDot   = p.category ? `<span class="tag tag-colored">${p.category}</span>` : '';
+    const pinBadge = p.pinned   ? `<span class="pin-badge">📌 Fixado</span>` : '';
 
     return `
       <div class="post-card ${p.pinned ? 'pinned' : ''}" onclick="viewPost('${p.id}')">
@@ -334,14 +450,19 @@ function editCurrentPost() {
   document.getElementById('new-post-overlay').classList.add('open');
 }
 
-function deleteCurrentPost() {
+async function deleteCurrentPost() {
   if (!confirm('Excluir esta publicação?')) return;
-  posts = posts.filter(p => p.id !== viewingPostId);
-  save();
-  closeView();
-  renderCategories();
-  renderPosts();
-  showToast('Publicação excluída');
+  try {
+    await deletePostDB(viewingPostId);
+    posts = posts.filter(p => p.id !== viewingPostId);
+    closeView();
+    renderCategories();
+    renderPosts();
+    showToast('Publicação excluída');
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao excluir publicação');
+  }
 }
 
 // ── New Post Modal ──
@@ -352,8 +473,8 @@ function openNewPost() {
   document.getElementById('f-body').value   = '';
   document.getElementById('f-author').value = '';
   document.getElementById('f-pin').checked  = false;
-  document.getElementById('f-img-url').value    = '';
-  document.getElementById('f-video-url').value  = '';
+  document.getElementById('f-img-url').value     = '';
+  document.getElementById('f-video-url').value   = '';
   document.getElementById('f-video-embed').value = '';
   document.getElementById('img-url-preview').style.display    = 'none';
   document.getElementById('img-upload-preview').style.display = 'none';
@@ -420,7 +541,7 @@ uploadArea.addEventListener('drop', e => {
 });
 
 // ── Submit Post ──
-function submitPost() {
+async function submitPost() {
   const title = document.getElementById('f-title').value.trim();
   const body  = document.getElementById('f-body').value.trim();
   if (!title) { showToast('Insira um título'); return; }
@@ -440,40 +561,46 @@ function submitPost() {
     if (url) { mediaType = 'embed'; mediaSrc = url; }
   }
 
-  if (editingPostId) {
-    const p = posts.find(x => x.id === editingPostId);
-    if (p) {
-      p.title     = title;
-      p.body      = body;
-      p.author    = document.getElementById('f-author').value.trim() || 'Anônimo';
-      p.category  = document.getElementById('f-cat').value;
-      p.pinned    = document.getElementById('f-pin').checked;
-      p.mediaType = mediaType;
-      p.mediaSrc  = mediaSrc;
-      p.editedAt  = Date.now();
+  try {
+    if (editingPostId) {
+      const p = posts.find(x => x.id === editingPostId);
+      if (p) {
+        p.title     = title;
+        p.body      = body;
+        p.author    = document.getElementById('f-author').value.trim() || 'Anônimo';
+        p.category  = document.getElementById('f-cat').value;
+        p.pinned    = document.getElementById('f-pin').checked;
+        p.mediaType = mediaType;
+        p.mediaSrc  = mediaSrc;
+        p.editedAt  = Date.now();
+        await savePost(p);
+      }
+      showToast('Publicação atualizada!');
+    } else {
+      const post = {
+        id:        'p' + Date.now(),
+        title,
+        body,
+        author:    document.getElementById('f-author').value.trim() || 'Anônimo',
+        category:  document.getElementById('f-cat').value,
+        pinned:    document.getElementById('f-pin').checked,
+        mediaType,
+        mediaSrc,
+        ts:        Date.now()
+      };
+      await savePost(post);
+      posts.unshift(post);
+      showToast('Publicação criada!');
     }
-    showToast('Publicação atualizada!');
-  } else {
-    const post = {
-      id:        'p' + Date.now(),
-      title,
-      body,
-      author:    document.getElementById('f-author').value.trim() || 'Anônimo',
-      category:  document.getElementById('f-cat').value,
-      pinned:    document.getElementById('f-pin').checked,
-      mediaType,
-      mediaSrc,
-      ts:        Date.now()
-    };
-    posts.unshift(post);
-    showToast('Publicação criada!');
-  }
 
-  uploadedImgData = null;
-  save();
-  closeNewPost();
-  renderCategories();
-  renderPosts();
+    uploadedImgData = null;
+    closeNewPost();
+    renderCategories();
+    renderPosts();
+  } catch (err) {
+    console.error(err);
+    showToast('Erro ao salvar publicação');
+  }
 }
 
 // ── Search ──
@@ -520,7 +647,7 @@ function doSearch() {
 // ── Overlay close on background click ──
 function closeOnBg(e, id) {
   if (e.target.id === id) {
-    if (id === 'view-overlay')      closeView();
+    if (id === 'view-overlay')          closeView();
     else if (id === 'new-post-overlay') closeNewPost();
     else if (id === 'search-overlay')   closeSearch();
   }
@@ -536,36 +663,4 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Init ──
-renderCategories();
-renderPosts();
-
-// Seed sample data on first run
-if (!posts.length) {
-  posts = [
-    {
-      id: 'p1',
-      title: 'Bem-vindo ao Fórum!',
-      body: 'Este é um espaço para compartilhar ideias, perguntas e projetos.\n\nUse as categorias na barra lateral para organizar suas publicações. Você pode adicionar imagens, vídeos e muito mais!',
-      author: 'Admin',
-      category: 'Geral',
-      pinned: true,
-      mediaType: null,
-      mediaSrc: null,
-      ts: Date.now() - 5000
-    },
-    {
-      id: 'p2',
-      title: 'Como funciona este fórum?',
-      body: 'Você pode criar publicações com texto, imagens (via URL ou upload) e vídeos.\n\nNa barra lateral é possível adicionar, renomear e excluir categorias. Clique em qualquer publicação para visualizá-la completa.',
-      author: 'Usuário',
-      category: 'Perguntas',
-      pinned: false,
-      mediaType: null,
-      mediaSrc: null,
-      ts: Date.now() - 3000
-    }
-  ];
-  save();
-  renderCategories();
-  renderPosts();
-}
+loadData();
