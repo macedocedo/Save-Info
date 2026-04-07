@@ -14,10 +14,6 @@ Projeto conectado ao:
 
 👉 https://supabase.com/
 
-https://github.com/user-attachments/assets/793897fe-b01e-401c-a79c-f839bd54d22a"
-https://github.com/user-attachments/assets/6c02b5dc-d849-42b1-bb7c-af445f9db15d
-
-
 🗄️ Estrutura do Banco de Dados
 
 *📌 Tabela: posts*
