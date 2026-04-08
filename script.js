@@ -5,10 +5,10 @@
 const SUPABASE_URL = 'https://gwmccqpxuyichkrzyqyi.supabase.co'; 
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bWNjcXB4dXlpY2hrcnp5cXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Mjc5OTAsImV4cCI6MjA5MTEwMzk5MH0.vORdYx-ilVFzzYJkzPftIukPZMt5nhUhn0ETvGw6zCc';               
 // ════════════════════════════════════════════════════════
-
+// Cria a conexão com o Supabase
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── State ──
+// ── State (estado global da aplicação) ──
 let posts      = [];
 let categories = [];
 let activeTab      = 'none';
@@ -18,19 +18,20 @@ let editingPostId  = null;
 let viewingPostId  = null;
 let uploadedImgData = null;
 
-// ── Helpers ──
+// ── Helpers (funções auxiliares) ── Exibe mensagem temporária (toast)
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
 }
-
+// Retorna iniciais do nome (ex: "Mateus Macedo" → "MM")
 function getInitials(name) {
   if (!name) return '?';
   return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
 }
 
+// Converte timestamp em tempo relativo (ex: "5min atrás")
 function timeAgo(ts) {
   const diff = Date.now() - ts;
   const m = Math.floor(diff / 60000);
@@ -42,7 +43,7 @@ function timeAgo(ts) {
   if (d < 30) return `${d}d atrás`;
   return new Date(ts).toLocaleDateString('pt-BR');
 }
-
+// Gera uma cor baseada no nome da categoria (hash simples)
 function catColor(cat) {
   const colors = ['#2d7d46','#1a5ca8','#7d2d2d','#5a2d7d','#7d5a2d','#2d5a7d'];
   if (!cat) return colors[0];
@@ -50,7 +51,7 @@ function catColor(cat) {
   for (let c of cat) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
   return colors[Math.abs(h) % colors.length];
 }
-
+// Converte links de vídeo (YouTube/Vimeo) para embed
 function getEmbedUrl(url) {
   try {
     const u = new URL(url);
@@ -65,7 +66,7 @@ function getEmbedUrl(url) {
   } catch (_) {}
   return url;
 }
-// ── Auth ──
+// Inicializa autenticação // Se já estiver logado → mostra app
 async function initAuth() {
   const { data: { session } } = await db.auth.getSession();
   if (session) {
@@ -73,46 +74,46 @@ async function initAuth() {
   } else {
     showAuthScreen();
   }
-
+// Escuta mudanças de login/logout
   db.auth.onAuthStateChange((_event, session) => {
     if (session) showApp();
     else showAuthScreen();
   });
 }
-
+// Mostra aplicação principal
 function showApp() {
   document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('logout-btn').style.display = 'inline-flex';
   loadData();
 }
-
+// Mostra tela de login
 function showAuthScreen() {
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('logout-btn').style.display = 'none';
 }
-
+// Exibe erro de autenticação
 function showAuthError(msg) {
   const el = document.getElementById('auth-error');
   el.textContent = msg;
   el.style.display = 'block';
 }
-
+// Limpa erro de autenticação
 function clearAuthError() {
   document.getElementById('auth-error').style.display = 'none';
 }
-
+// Alterna para tela de login
 function showLogin() {
   document.getElementById('auth-login-form').style.display = 'block';
   document.getElementById('auth-signup-form').style.display = 'none';
   clearAuthError();
 }
-
+// Alterna para tela de cadastro
 function showSignup() {
   document.getElementById('auth-login-form').style.display = 'none';
   document.getElementById('auth-signup-form').style.display = 'block';
   clearAuthError();
 }
-
+// Faz login
 async function doLogin() {
   clearAuthError();
   const email    = document.getElementById('auth-email').value.trim();
@@ -122,7 +123,7 @@ async function doLogin() {
   const { error } = await db.auth.signInWithPassword({ email, password });
   if (error) showAuthError('Email ou senha incorretos.');
 }
-
+// Faz cadastro
 async function doSignup() {
   clearAuthError();
   const email    = document.getElementById('auth-signup-email').value.trim();
@@ -134,7 +135,7 @@ async function doSignup() {
   if (error) showAuthError(error.message);
   else showToast('Conta criada! Verifique seu email se necessário.');
 }
-
+// Logout
 async function doLogout() {
   await db.auth.signOut();
   posts = [];
@@ -143,7 +144,7 @@ async function doLogout() {
   renderCategories();
 }
 
-// ── Supabase: Carregar dados ──
+// ── Supabase: Carregar dados ── Busca categorias e posts do banco
 async function loadData() {
   try {
     const { data: cats, error: catErr } = await db
@@ -159,6 +160,7 @@ async function loadData() {
       .select('*')
       .order('ts', { ascending: false });
 
+// Mapeia campos do banco para o frontend
     if (postErr) throw postErr;
     posts = ps.map(p => ({
       id:        p.id,
@@ -173,6 +175,7 @@ async function loadData() {
       editedAt:  p.edited_at
     }));
 
+// Atualiza interface
     renderCategories();
     renderPosts();
   } catch (err) {
@@ -181,7 +184,7 @@ async function loadData() {
   }
 }
 
-// ── Supabase: Salvar post (criar ou editar) ──
+// ── Supabase: Salvar post ── Cria ou atualiza (upsert) um post
 async function savePost(post) {
   const { error } = await db.from('posts').upsert({
     id:         post.id,
@@ -240,7 +243,9 @@ async function deleteCategoryDB(name) {
   if (postErr) throw postErr;
 }
 
-// ── Categories: Render ──
+// ── Categories: Render ── // Renderiza a lista de categorias na sidebar
+// Categoria padrão "Todas"
+// Percorre todas as categorias
 function renderCategories() {
   const list = document.getElementById('cat-list');
   let html = `
@@ -265,9 +270,10 @@ function renderCategories() {
         </div>
       </div>`;
   });
-
+// Atualiza o HTML da lista
   list.innerHTML = html;
 
+// Atualiza contadores no topo
   document.getElementById('info-posts').textContent =
     `${posts.length} publicaç${posts.length !== 1 ? 'ões' : 'ão'}`;
   document.getElementById('info-cats').textContent =
@@ -280,6 +286,9 @@ function renderCategories() {
   }
 }
 
+// Inicia edição de uma categoria
+// Foca automaticamente no input
+// Troca botões por botão de confirmação
 function startEditCat(i) {
   const label = document.getElementById(`cat-label-${i}`);
   if (!label) return;
@@ -294,6 +303,12 @@ function startEditCat(i) {
   if (acts) acts.innerHTML = `<button class="cat-edit-confirm" onclick="confirmEditCat(${i})">✓</button>`;
 }
 
+// Confirma edição da categoria
+// Atualiza no banco
+// Atualiza localmente
+// Atualiza posts que usam essa categoria
+// Atualiza categoria ativa se necessário
+// Re-renderiza
 async function confirmEditCat(i) {
   const inp = document.getElementById(`cat-edit-${i}`);
   if (!inp) return;
@@ -314,7 +329,11 @@ async function confirmEditCat(i) {
     renderCategories();
   }
 }
-
+// Exclui uma categoria
+// Confirmação do usuário
+// Remove do banco
+// Remove localmente
+// Remove categoria dos posts
 async function deleteCategory(i) {
   if (!confirm(`Excluir categoria "${categories[i]}"? As publicações ficarão sem categoria.`)) return;
   const old = categories[i];
@@ -332,12 +351,23 @@ async function deleteCategory(i) {
   }
 }
 
+// Mostra/esconde formulário de nova categoria
 function toggleAddCat() {
   const f = document.getElementById('add-cat-form');
   f.style.display = f.style.display === 'none' ? 'flex' : 'none';
   if (f.style.display === 'flex') document.getElementById('new-cat-input').focus();
 }
 
+// Confirma criação de categoria
+// Pega o input e remove espaços extras
+// Se estiver vazio, não faz nada
+// Verifica se a categoria já existe
+// Salva no banco de dados
+// Adiciona na lista local
+// Limpa o input
+// Esconde o formulário de adicionar categoria
+// Atualiza a renderização
+// Feedback para o usuário
 async function confirmAddCat() {
   const inp  = document.getElementById('new-cat-input');
   const name = inp.value.trim();
@@ -356,6 +386,7 @@ async function confirmAddCat() {
   }
 }
 
+// Eventos de teclado no input de nova categoria
 document.getElementById('new-cat-input').addEventListener('keydown', e => {
   if (e.key === 'Enter')  confirmAddCat();
   if (e.key === 'Escape') {
@@ -364,6 +395,7 @@ document.getElementById('new-cat-input').addEventListener('keydown', e => {
   }
 });
 
+// Define categoria ativa
 function setCategory(cat) {
   activeCategory = cat;
   document.getElementById('page-title').textContent = cat || 'Todas as Publicações';
@@ -374,7 +406,7 @@ function setCategory(cat) {
   renderPosts();
 }
 
-// ── Sort ──
+// Define ordenação atual
 function setSort(s) {
   currentSort = s;
   document.querySelectorAll('.sort-btn').forEach(b =>
@@ -382,21 +414,24 @@ function setSort(s) {
   renderPosts();
 }
 
+// Retorna lista filtrada e ordenada
 function getFilteredPosts() {
   let list = activeCategory
     ? posts.filter(p => p.category === activeCategory)
     : [...posts];
 
+  // Aplica ordenação
   if (currentSort === 'recent')      list.sort((a, b) => b.ts - a.ts);
   else if (currentSort === 'oldest') list.sort((a, b) => a.ts - b.ts);
   else                               list.sort((a, b) => a.title.localeCompare(b.title, 'pt-BR'));
 
+  // Separa fixados
   const pinned = list.filter(p => p.pinned);
   const rest   = list.filter(p => !p.pinned);
   return [...pinned, ...rest];
 }
 
-// ── Render Posts ──
+// Renderiza lista de posts
 function renderPosts() {
   const container = document.getElementById('posts-container');
   const list = getFilteredPosts();
@@ -411,6 +446,10 @@ function renderPosts() {
     return;
   }
 
+  // Monta HTML dos posts
+  // Verifica tipo de mídia
+  // Thumbnail da imagem
+  // Tag de categoria
   container.innerHTML = list.map(p => {
     let mediaIndicator = '';
     let thumb = '';
@@ -451,7 +490,7 @@ function renderPosts() {
   }).join('');
 }
 
-// ── View Post ──
+// ── View Post ── Abre visualização de um post
 function viewPost(id) {
   const p = posts.find(x => x.id === id);
   if (!p) return;
@@ -542,7 +581,7 @@ async function deleteCurrentPost() {
   }
 }
 
-// ── New Post Modal ──
+// ── Nova publicação modal ──
 function openNewPost() {
   editingPostId = null;
   document.getElementById('form-modal-title').textContent = 'Nova Publicação';
@@ -565,7 +604,7 @@ function closeNewPost() {
   document.getElementById('new-post-overlay').classList.remove('open');
 }
 
-// ── Media tabs ──
+// ── Abas de mídia ──
 function switchTab(tab) {
   activeTab = tab;
   const tabIds = ['none','img-url','img-upload','video-url','video-embed'];
@@ -598,7 +637,7 @@ function handleImgUpload() {
   reader.readAsDataURL(file);
 }
 
-// Drag & drop upload
+// Carregamento por arrastar e soltar
 const uploadArea = document.getElementById('upload-area');
 uploadArea.addEventListener('dragover', e => {
   e.preventDefault();
@@ -617,7 +656,7 @@ uploadArea.addEventListener('drop', e => {
   }
 });
 
-// ── Submit Post ──
+// ── Enviar publicação ──
 async function submitPost() {
   const title = document.getElementById('f-title').value.trim();
   const body  = document.getElementById('f-body').value.trim();
@@ -680,7 +719,7 @@ async function submitPost() {
   }
 }
 
-// ── Search ──
+// ── Buscar ──
 function openSearch() {
   document.getElementById('search-overlay').classList.add('open');
   setTimeout(() => document.getElementById('search-input').focus(), 50);
@@ -721,7 +760,7 @@ function doSearch() {
     </div>`).join('');
 }
 
-// ── Overlay close on background click ──
+// ── Fechar sobreposição ao clicar no fundo ──
 function closeOnBg(e, id) {
   if (e.target.id === id) {
     if (id === 'view-overlay')          closeView();
@@ -730,7 +769,7 @@ function closeOnBg(e, id) {
   }
 }
 
-// ── Keyboard shortcuts ──
+// ── Atalhos de teclado ──
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
     closeView();
@@ -739,5 +778,5 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// ── Init ──
+// ── Init ── Inicializa autenticação ao carregar o sistema
 initAuth();
