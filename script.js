@@ -65,6 +65,83 @@ function getEmbedUrl(url) {
   } catch (_) {}
   return url;
 }
+// ── Auth ──
+async function initAuth() {
+  const { data: { session } } = await db.auth.getSession();
+  if (session) {
+    showApp();
+  } else {
+    showAuthScreen();
+  }
+
+  db.auth.onAuthStateChange((_event, session) => {
+    if (session) showApp();
+    else showAuthScreen();
+  });
+}
+
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('logout-btn').style.display = 'inline-flex';
+  loadData();
+}
+
+function showAuthScreen() {
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('logout-btn').style.display = 'none';
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('auth-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function clearAuthError() {
+  document.getElementById('auth-error').style.display = 'none';
+}
+
+function showLogin() {
+  document.getElementById('auth-login-form').style.display = 'block';
+  document.getElementById('auth-signup-form').style.display = 'none';
+  clearAuthError();
+}
+
+function showSignup() {
+  document.getElementById('auth-login-form').style.display = 'none';
+  document.getElementById('auth-signup-form').style.display = 'block';
+  clearAuthError();
+}
+
+async function doLogin() {
+  clearAuthError();
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!email || !password) { showAuthError('Preencha email e senha.'); return; }
+
+  const { error } = await db.auth.signInWithPassword({ email, password });
+  if (error) showAuthError('Email ou senha incorretos.');
+}
+
+async function doSignup() {
+  clearAuthError();
+  const email    = document.getElementById('auth-signup-email').value.trim();
+  const password = document.getElementById('auth-signup-password').value;
+  if (!email || !password) { showAuthError('Preencha email e senha.'); return; }
+  if (password.length < 6) { showAuthError('A senha deve ter no mínimo 6 caracteres.'); return; }
+
+  const { error } = await db.auth.signUp({ email, password });
+  if (error) showAuthError(error.message);
+  else showToast('Conta criada! Verifique seu email se necessário.');
+}
+
+async function doLogout() {
+  await db.auth.signOut();
+  posts = [];
+  categories = [];
+  renderPosts();
+  renderCategories();
+}
 
 // ── Supabase: Carregar dados ──
 async function loadData() {
@@ -663,4 +740,4 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Init ──
-loadData();
+initAuth();
