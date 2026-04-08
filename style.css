@@ -346,13 +346,16 @@ main {
 
 /* ── Cards de Post ── */
 .post-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 20px 22px;
-  margin-bottom: 14px;
-  transition: all 0.15s;
-  cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    margin-bottom: 14px;
+    transition: all 0.15s;
+    cursor: pointer;
+    text-overflow: ellipsis;
+    max-height: 200px; /* limite */
+    overflow: hidden;  /* esconde o excesso */
 }
 
 /* Efeito ao passar o mouse no card */
