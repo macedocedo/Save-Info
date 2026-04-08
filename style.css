@@ -759,7 +759,7 @@ main {
 
 /* ── Responsividade ── */
 @media (max-width: 700px) {
-  aside { display: contents; }
+  aside { display: none; }
   main { padding: 16px; }
   .layout { flex-direction: column; }
   .media-tabs { gap: 4px; }
