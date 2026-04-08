@@ -2,8 +2,8 @@
 //  ⚠️  CONFIGURE AQUI — substitua pelos seus dados do Supabase
 //  Acesse: supabase.com → seu projeto → Settings → API
 // ════════════════════════════════════════════════════════
-const SUPABASE_URL = 'https://gwmccqpxuyichkrzyqyi.supabase.co'; // ← substitua
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bWNjcXB4dXlpY2hrcnp5cXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Mjc5OTAsImV4cCI6MjA5MTEwMzk5MH0.vORdYx-ilVFzzYJkzPftIukPZMt5nhUhn0ETvGw6zCc';               // ← substitua
+const SUPABASE_URL = 'https://gwmccqpxuyichkrzyqyi.supabase.co'; 
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd3bWNjcXB4dXlpY2hrcnp5cXlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1Mjc5OTAsImV4cCI6MjA5MTEwMzk5MH0.vORdYx-ilVFzzYJkzPftIukPZMt5nhUhn0ETvGw6zCc';               
 // ════════════════════════════════════════════════════════
 
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
