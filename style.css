@@ -41,7 +41,7 @@ body {
 header {
   background: var(--accent);
   color: #fff;
-  padding: 0 24px;
+  padding: 0 8px;
   height: 56px;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@ header {
 
 /* ── Buttons ── */
 .btn {
-  padding: 7px 16px;
+  padding: 7px 13px;
   border-radius: var(--radius-sm);
   border: none;
   cursor: pointer;
