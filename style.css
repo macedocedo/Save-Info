@@ -751,7 +751,7 @@ main {
   justify-content: center;
   padding: 10px;
   background: var(--accent);
-  color: #fff;
+  color: #000000;
   font-size: 14px;
   margin-top: 4px;
 }
