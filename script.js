@@ -401,7 +401,7 @@ function setCategory(cat) {
   document.getElementById('page-title').textContent = cat || 'Todas as Publicações';
   const filtered = cat ? posts.filter(p => p.category === cat) : posts;
   document.getElementById('page-subtitle').textContent =
-    cat ? `${filtered.length} publicações` : 'Bem-vindo ao fórum';
+    cat ? `${filtered.length} publicações` : 'Bem-vindo ao Save-Info';
   renderCategories();
   renderPosts();
 }
