@@ -449,7 +449,7 @@ main {
 
 /* Resumo/preview do post */
 .post-excerpt {
-  font-size: 14px;
+  font-size: 12px;
   color: var(--text2);
   display: -webkit-box;
   -webkit-box-orient: vertical;
