@@ -1,9 +1,11 @@
+/* Reset básico: remove margens/paddings e define box-sizing padrão */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
+/* Variáveis globais (tema, cores, espaçamentos, sombras, etc.) */
 :root {
   --bg: #f5f3ee;
   --surface: #ffffff;
@@ -28,6 +30,7 @@
   --shadow-md: 0 4px 12px rgba(0,0,0,0.1);
 }
 
+/* Estilo base do corpo da página */
 body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
@@ -37,7 +40,7 @@ body {
   line-height: 1.6;
 }
 
-/* ── Header ── */
+/* ── Header (topo fixo) ── */
 header {
   background: var(--accent);
   color: #fff;
@@ -52,6 +55,7 @@ header {
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 
+/* Logo principal */
 .logo {
   font-family: 'DM Serif Display', serif;
   font-size: 22px;
@@ -59,18 +63,20 @@ header {
   color: #e8f4e8;
 }
 
+/* Parte destacada da logo */
 .logo span {
   color: #a8d4a8;
   font-style: italic;
 }
 
+/* Área de ações no header (botões, etc.) */
 .header-actions {
   display: flex;
   gap: 10px;
   align-items: center;
 }
 
-/* ── Buttons ── */
+/* ── Botões padrão ── */
 .btn {
   padding: 4px 5px;
   border-radius: var(--radius-sm);
@@ -85,12 +91,14 @@ header {
   gap: 6px;
 }
 
+/* Botão principal */
 .btn-primary {
   background: #fff;
   color: var(--accent);
 }
 .btn-primary:hover { background: #e8f4e8; }
 
+/* Botão transparente (header) */
 .btn-ghost {
   background: transparent;
   color: rgba(255,255,255,0.85);
@@ -98,6 +106,7 @@ header {
 }
 .btn-ghost:hover { background: rgba(255,255,255,0.1); }
 
+/* Botão com borda */
 .btn-outline {
   background: transparent;
   color: var(--accent);
@@ -105,6 +114,7 @@ header {
 }
 .btn-outline:hover { background: var(--accent-bg); }
 
+/* Botão de perigo (excluir) */
 .btn-danger {
   background: var(--danger-bg);
   color: var(--danger);
@@ -112,15 +122,16 @@ header {
 }
 .btn-danger:hover { background: #faddda; }
 
+/* Botão pequeno */
 .btn-sm { padding: 5px 10px; font-size: 12px; }
 
-/* ── Layout ── */
+/* ── Layout principal (sidebar + conteúdo) ── */
 .layout {
   display: flex;
   min-height: calc(100vh - 56px);
 }
 
-/* ── Sidebar ── */
+/* ── Sidebar lateral ── */
 aside {
   width: var(--sidebar-w);
   background: var(--surface);
@@ -134,6 +145,7 @@ aside {
   flex-direction: column;
 }
 
+/* Seções da sidebar */
 .sidebar-section {
   padding: 16px;
   border-bottom: 1px solid var(--border);
@@ -143,6 +155,7 @@ aside {
   flex: 1;
 }
 
+/* Título da sidebar */
 .sidebar-title {
   font-size: 11px;
   font-weight: 600;
@@ -155,6 +168,7 @@ aside {
   justify-content: space-between;
 }
 
+/* Item de categoria */
 .category-item {
   display: flex;
   align-items: center;
@@ -168,9 +182,11 @@ aside {
   position: relative;
 }
 
+/* Hover e estado ativo */
 .category-item:hover { background: var(--surface2); color: var(--text); }
 .category-item.active { background: var(--accent-bg); color: var(--accent); font-weight: 500; }
 
+/* Bolinha de cor da categoria */
 .category-dot {
   width: 10px;
   height: 10px;
@@ -178,6 +194,7 @@ aside {
   flex-shrink: 0;
 }
 
+/* Contador de itens da categoria */
 .category-count {
   margin-left: auto;
   font-size: 11px;
@@ -188,20 +205,24 @@ aside {
   font-weight: 500;
 }
 
+/* Estilo do contador quando ativo */
 .category-item.active .category-count {
   background: var(--accent-bg);
   color: var(--accent);
 }
 
+/* Ações (editar/excluir) escondidas por padrão */
 .cat-actions {
   display: none;
   gap: 2px;
   margin-left: auto;
 }
 
+/* Mostra ações ao passar mouse */
 .category-item:hover .cat-actions { display: flex; }
 .category-item:hover .category-count { display: none; }
 
+/* Botões de ação da categoria */
 .cat-actions button {
   width: 22px;
   height: 22px;
@@ -219,12 +240,14 @@ aside {
 .cat-actions button:hover { background: var(--border); color: var(--text); }
 .cat-actions .del:hover { background: var(--danger-bg); color: var(--danger); }
 
+/* Formulário de adicionar categoria */
 .add-cat-form {
   margin-top: 8px;
   display: flex;
   gap: 6px;
 }
 
+/* Input de nova categoria */
 .add-cat-form input {
   flex: 1;
   padding: 6px 10px;
@@ -239,6 +262,7 @@ aside {
 }
 .add-cat-form input:focus { border-color: var(--accent2); }
 
+/* Input de edição de categoria */
 .cat-edit-input {
   flex: 1;
   padding: 4px 8px;
@@ -250,6 +274,7 @@ aside {
   outline: none;
 }
 
+/* Botão confirmar edição */
 .cat-edit-confirm {
   width: 22px;
   height: 22px;
@@ -265,13 +290,14 @@ aside {
 }
 .cat-edit-confirm:hover { background: var(--accent); color: white; }
 
-/* ── Main ── */
+/* ── Conteúdo principal ── */
 main {
   flex: 1;
   padding: 28px 32px;
   max-width: 860px;
 }
 
+/* Cabeçalho da página */
 .page-header {
   margin-bottom: 24px;
   display: flex;
@@ -280,6 +306,7 @@ main {
   gap: 16px;
 }
 
+/* Título da página */
 .page-title {
   font-family: 'DM Serif Display', serif;
   font-size: 28px;
@@ -287,13 +314,14 @@ main {
   line-height: 1.2;
 }
 
+/* Subtítulo */
 .page-subtitle {
   font-size: 14px;
   color: var(--text3);
   margin-top: 3px;
 }
 
-/* ── Sort bar ── */
+/* ── Barra de classificação ── */
 .sort-bar {
   display: flex;
   gap: 6px;
@@ -301,6 +329,7 @@ main {
   margin-bottom: 16px;
 }
 
+/* Botão de ordenação (filtros tipo "Recentes", "Antigos", etc.) */
 .sort-btn {
   padding: 5px 12px;
   border-radius: 20px;
@@ -315,7 +344,7 @@ main {
 .sort-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .sort-btn:hover:not(.active) { background: var(--surface2); }
 
-/* ── Post Cards ── */
+/* ── Cards de Post ── */
 .post-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -326,27 +355,32 @@ main {
   cursor: pointer;
 }
 
+/* Efeito ao passar o mouse no card */
 .post-card:hover {
   border-color: var(--border-strong);
   box-shadow: var(--shadow);
 }
 
+/* Card fixado (pinned/destaque) */
 .post-card.pinned {
   border-left: 3px solid var(--gold);
   background: linear-gradient(to right, var(--gold-bg), var(--surface));
 }
 
+/* Container interno do card */
 .post-card-inner {
   display: flex;
   gap: 14px;
   align-items: flex-start;
 }
 
+/* Corpo do card */
 .post-card-body {
   flex: 1;
   min-width: 0;
 }
 
+/* Metadados do post (autor, data, tags) */
 .post-meta {
   display: flex;
   align-items: center;
@@ -355,6 +389,7 @@ main {
   flex-wrap: wrap;
 }
 
+/* Avatar do autor */
 .avatar {
   width: 32px;
   height: 32px;
@@ -369,9 +404,12 @@ main {
   flex-shrink: 0;
 }
 
+/* Nome do autor */
+/* Data do post */
 .author { font-weight: 500; font-size: 14px; }
 .post-date { font-size: 13px; color: var(--text3); }
 
+/* Tag padrão */
 .tag {
   font-size: 11px;
   padding: 2px 8px;
@@ -382,12 +420,14 @@ main {
   font-weight: 500;
 }
 
+/* Tag com destaque (colorida) */
 .tag.tag-colored {
   background: var(--accent-bg);
   color: var(--accent);
   border-color: #b8d4b8;
 }
 
+/* Badge de post fixado */
 .pin-badge {
   font-size: 11px;
   padding: 2px 8px;
@@ -398,6 +438,7 @@ main {
   font-weight: 500;
 }
 
+/* Título do post */
 .post-title {
   font-family: 'DM Serif Display', serif;
   font-size: 19px;
@@ -406,6 +447,7 @@ main {
   line-height: 1.3;
 }
 
+/* Resumo/preview do post */
 .post-excerpt {
   font-size: 14px;
   color: var(--text2);
@@ -415,6 +457,7 @@ main {
   line-height: 1.6;
 }
 
+/* Thumbnail de imagem do post */
 .post-img-thumb {
   width: 80px;
   height: 60px;
@@ -423,6 +466,7 @@ main {
   flex-shrink: 0;
 }
 
+/* Indicador de mídia (imagem/vídeo) */
 .media-indicator {
   font-size: 12px;
   color: var(--text3);
@@ -432,7 +476,7 @@ main {
   margin-top: 4px;
 }
 
-/* ── Empty state ── */
+/* ── Estado vazio (sem posts) ── */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -442,7 +486,7 @@ main {
 .empty-state h3 { font-size: 17px; color: var(--text2); margin-bottom: 6px; }
 .empty-state p { font-size: 14px; }
 
-/* ── Modal ── */
+/* ── Modal (janela popup) ── */
 .overlay {
   display: none;
   position: fixed;
@@ -456,6 +500,7 @@ main {
 }
 .overlay.open { display: flex; }
 
+/* Estrutura principal do modal */
 .modal {
   background: var(--surface);
   border-radius: 14px;
@@ -467,11 +512,13 @@ main {
   animation: slideUp 0.2s ease;
 }
 
+/* Animação de entrada do modal */
 @keyframes slideUp {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
+/* Cabeçalho do modal */
 .modal-header {
   padding: 20px 24px 16px;
   border-bottom: 1px solid var(--border);
@@ -485,11 +532,13 @@ main {
   z-index: 1;
 }
 
+/* Título do modal */
 .modal-title {
   font-family: 'DM Serif Display', serif;
   font-size: 20px;
 }
 
+/* Botão de fechar modal */
 .modal-close {
   width: 32px;
   height: 32px;
@@ -508,6 +557,7 @@ main {
 
 .modal-body { padding: 20px 24px; }
 
+/* Rodapé do modal (botões) */
 .modal-footer {
   padding: 16px 24px 20px;
   border-top: 1px solid var(--border);
@@ -516,9 +566,10 @@ main {
   justify-content: flex-end;
 }
 
-/* ── Form ── */
+/* ── Formulários ── */
 .form-group { margin-bottom: 16px; }
 
+/* Label dos inputs */
 .form-label {
   display: block;
   font-size: 13px;
@@ -527,6 +578,7 @@ main {
   color: var(--text2);
 }
 
+/* Inputs, selects e textarea */
 .form-input, .form-select, .form-textarea {
   width: 100%;
   padding: 9px 12px;
@@ -540,11 +592,13 @@ main {
   transition: border-color 0.15s;
 }
 
+/* Estado focus dos campos */
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--accent2);
   background: var(--surface);
 }
 
+/* Textarea */
 .form-textarea {
   min-height: 120px;
   resize: vertical;
@@ -559,7 +613,7 @@ main {
 }
 .checkbox-row input { width: 15px; height: 15px; accent-color: var(--accent); }
 
-/* ── Media tabs ── */
+/* ── Tabs de mídia (imagem/vídeo/url) ── */
 .media-tabs {
   display: flex;
   gap: 6px;
@@ -567,6 +621,7 @@ main {
   flex-wrap: wrap;
 }
 
+/* Botão de aba */
 .media-tab {
   padding: 5px 12px;
   border-radius: 20px;
@@ -584,9 +639,11 @@ main {
   border-color: var(--accent);
 }
 
+/* Conteúdo das abas */
 .media-section { display: none; }
 .media-section.active { display: block; }
 
+/* Linha com input de URL */
 .url-input-row {
   display: flex;
   gap: 8px;
@@ -594,6 +651,7 @@ main {
 }
 .url-input-row input { flex: 1; }
 
+/* Preview de imagem */
 .img-preview {
   margin-top: 8px;
   border-radius: var(--radius-sm);
@@ -607,6 +665,7 @@ main {
   display: block;
 }
 
+/* Área de upload (drag and drop) */
 .upload-area {
   border: 2px dashed var(--border);
   border-radius: var(--radius);
@@ -620,9 +679,10 @@ main {
 .upload-area:hover { border-color: var(--accent2); background: var(--accent-bg); color: var(--accent); }
 .upload-area.dragover { border-color: var(--accent); background: var(--accent-bg); }
 
-/* ── Post View ── */
+/* ── Visualização do post ── */
 .post-view-content { padding: 24px; }
 
+/* Título grande do post */
 .post-view-title {
   font-family: 'DM Serif Display', serif;
   font-size: 28px;
@@ -630,6 +690,7 @@ main {
   line-height: 1.25;
 }
 
+/* Corpo do post */
 .post-view-body {
   font-size: 15px;
   line-height: 1.75;
@@ -638,6 +699,7 @@ main {
   word-break: break-word;
 }
 
+/* Container de mídia */
 .post-view-media {
   margin: 20px 0;
   border-radius: var(--radius);
@@ -646,6 +708,7 @@ main {
   border: 1px solid var(--border);
 }
 
+/* Imagem do post */
 .post-view-media img {
   width: 100%;
   max-height: 480px;
@@ -654,12 +717,14 @@ main {
   background: var(--bg);
 }
 
+/* Vídeo do post */
 .post-view-media video {
   width: 100%;
   max-height: 480px;
   display: block;
 }
 
+/* Metadados abaixo do post */
 .post-view-meta {
   padding: 16px 24px;
   border-top: 1px solid var(--border);
@@ -669,7 +734,7 @@ main {
   flex-wrap: wrap;
 }
 
-/* ── Toast ── */
+/* ── Toast (notificação) ── */
 .toast {
   position: fixed;
   bottom: 24px;
@@ -686,12 +751,13 @@ main {
 }
 .toast.show { display: block; }
 
+/* Animação do toast */
 @keyframes toastIn {
   from { transform: translateY(10px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
 
-/* ── Responsive ── */
+/* ── Responsividade ── */
 @media (max-width: 700px) {
   aside { display: none; }
   main { padding: 16px; }
@@ -700,7 +766,7 @@ main {
   .media-tab { padding: 4px 8px; font-size: 11px; }
 }
 
-/* ── Auth Screen ── */
+/* ── Tela de autenticação ── */
 #auth-screen {
   position: fixed;
   inset: 0;
@@ -711,12 +777,14 @@ main {
   justify-content: center;
 }
 
+/* Container do auth */
 .auth-container {
   width: 100%;
   max-width: 400px;
   padding: 20px;
 }
 
+/* Caixa de login */
 .auth-box {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -728,14 +796,17 @@ main {
   align-items: stretch;
 }
 
+/* Logo na tela de login */
 .auth-box .logo {
   color: var(--accent);
   font-size: 26px;
   text-align: center;
 }
 
+/* Parte secundária da logo */
 .auth-box .logo span { color: var(--text3); }
 
+/* Mensagem de erro */
 .auth-error {
   background: var(--danger-bg);
   color: var(--danger);
@@ -746,6 +817,7 @@ main {
   margin-bottom: 16px;
 }
 
+/* Botão principal de login */
 .auth-submit-btn {
   width: 100%;
   justify-content: center;
@@ -757,6 +829,7 @@ main {
 }
 .auth-submit-btn:hover { background: var(--accent2); }
 
+/* Botão alternativo (ex: criar conta) */
 .auth-alt-btn {
   width: 100%;
   justify-content: center;
